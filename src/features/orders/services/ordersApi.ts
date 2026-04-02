@@ -28,43 +28,38 @@ function getAuthToken(): string | null {
   }
 }
 
-function request<T>(fn: () => Promise<axios.AxiosResponse<T>>): Promise<T> {
-  return fn().catch((err) => {
-    if (err.response?.status === 401) throw new AuthError()
+async function request<T>(fn: () => Promise<axios.AxiosResponse<T>>): Promise<T> {
+  try {
+    const { data } = await fn()
+    return data
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err) && err.response?.status === 401) {
+      throw new AuthError()
+    }
     throw err
-  })
+  }
 }
 
 export const ordersApi = {
-  getOrders: async (page = 1): Promise<OrdersResponse> => {
+  async getOrders(page = 1): Promise<OrdersResponse> {
     const token = getAuthToken()
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined
-    return request(() =>
-      api.get('/orders', { params: { page }, headers }).then((r) => r.data)
-    ).then((data) => {
-      if (Array.isArray(data)) return { orders: data }
-      if (data && Array.isArray((data as any).orders)) return data as OrdersResponse
-      return { orders: [] }
-    })
+    return await request(() => api.get<OrdersResponse>('/orders', { params: { page }, headers }))
   },
 
-  getOrderById: async (id: string): Promise<Order> => {
-    return request(() => api.get<Order>(`/orders/${id}`).then((r) => r.data))
+  async getOrderById(id: string): Promise<Order> {
+    return await request(() => api.get<Order>(`/orders/${id}`))
   },
 
-  createOrder: async (request: CreateOrderRequest): Promise<Order> => {
+  async createOrder(request: CreateOrderRequest): Promise<Order> {
     const token = getAuthToken()
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined
-    return request(() =>
-      api.post<Order>('/orders', request, { headers }).then((r) => r.data)
-    )
+    return await request(() => api.post<Order>('/orders', request, { headers }))
   },
 
-  cancelOrder: async (id: string): Promise<Order> => {
+  async cancelOrder(id: string): Promise<Order> {
     const token = getAuthToken()
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined
-    return request(() =>
-      api.post<Order>(`/orders/${id}/cancel`, undefined, { headers }).then((r) => r.data)
-    )
+    return await request(() => api.post<Order>(`/orders/${id}/cancel`, undefined, { headers }))
   },
 }
