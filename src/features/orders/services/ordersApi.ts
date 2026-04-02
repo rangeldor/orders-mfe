@@ -1,10 +1,15 @@
 import axios from 'axios'
 import type { Order, OrdersResponse, CreateOrderRequest } from '../types/orders.types'
 
+export class AuthError extends Error {
+  constructor(message = 'Unauthorized') {
+    super(message)
+    this.name = 'AuthError'
+  }
+}
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_ORDERS_API_URL,
-  // If the backend uses cookie-based sessions (no token returned on login),
-  // enable sending credentials so cookies are included in cross-site requests
   withCredentials: true,
 })
 
@@ -23,32 +28,43 @@ function getAuthToken(): string | null {
   }
 }
 
+function request<T>(fn: () => Promise<axios.AxiosResponse<T>>): Promise<T> {
+  return fn().catch((err) => {
+    if (err.response?.status === 401) throw new AuthError()
+    throw err
+  })
+}
+
 export const ordersApi = {
   getOrders: async (page = 1): Promise<OrdersResponse> => {
     const token = getAuthToken()
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined
-    const { data } = await api.get('/orders', { params: { page }, headers })
-    if (Array.isArray(data)) return { orders: data }
-    if (data && Array.isArray((data as any).orders)) return data as OrdersResponse
-    return { orders: [] }
+    return request(() =>
+      api.get('/orders', { params: { page }, headers }).then((r) => r.data)
+    ).then((data) => {
+      if (Array.isArray(data)) return { orders: data }
+      if (data && Array.isArray((data as any).orders)) return data as OrdersResponse
+      return { orders: [] }
+    })
   },
 
   getOrderById: async (id: string): Promise<Order> => {
-    const { data } = await api.get<Order>(`/orders/${id}`)
-    return data
+    return request(() => api.get<Order>(`/orders/${id}`).then((r) => r.data))
   },
 
   createOrder: async (request: CreateOrderRequest): Promise<Order> => {
     const token = getAuthToken()
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined
-    const { data } = await api.post<Order>('/orders', request, { headers })
-    return data
+    return request(() =>
+      api.post<Order>('/orders', request, { headers }).then((r) => r.data)
+    )
   },
 
   cancelOrder: async (id: string): Promise<Order> => {
     const token = getAuthToken()
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined
-    const { data } = await api.post<Order>(`/orders/${id}/cancel`, undefined, { headers })
-    return data
+    return request(() =>
+      api.post<Order>(`/orders/${id}/cancel`, undefined, { headers }).then((r) => r.data)
+    )
   },
 }
