@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useOrders } from '../hooks/useOrders'
 import { OrderListHost } from '../components/OrderListHost'
 import { AuthError } from '../services/ordersApi'
@@ -7,11 +6,10 @@ import { Skeleton } from '@rangeldor/cindle-design-system'
 export function OrdersPageHost() {
   const { data, isLoading, error } = useOrders()
 
-  useEffect(() => {
-    if (error instanceof AuthError) {
-      window.location.href = '/login'
-    }
-  }, [error])
+  if (error instanceof AuthError) {
+    window.location.replace('/login')
+    return null
+  }
 
   if (isLoading) {
     return (
