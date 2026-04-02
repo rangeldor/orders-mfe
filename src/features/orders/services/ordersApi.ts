@@ -1,5 +1,5 @@
-import axios from 'axios'
-import type { Order, OrdersResponse, CreateOrderRequest } from '../types/orders.types'
+import axios, { isAxiosError } from 'axios'
+import type { Order, CreateOrderRequest } from '../types/orders.types'
 
 export class AuthError extends Error {
   constructor(message = 'Unauthorized') {
@@ -28,12 +28,12 @@ function getAuthToken(): string | null {
   }
 }
 
-async function request<T>(fn: () => Promise<axios.AxiosResponse<T>>): Promise<T> {
+async function request<T>(fn: () => Promise<{ data: T }>): Promise<T> {
   try {
     const { data } = await fn()
     return data
   } catch (err: unknown) {
-    if (axios.isAxiosError(err) && err.response?.status === 401) {
+    if (isAxiosError(err) && err.response?.status === 401) {
       throw new AuthError()
     }
     throw err
@@ -41,10 +41,10 @@ async function request<T>(fn: () => Promise<axios.AxiosResponse<T>>): Promise<T>
 }
 
 export const ordersApi = {
-  async getOrders(page = 1): Promise<OrdersResponse> {
+  async getOrders(page = 1): Promise<Order[]> {
     const token = getAuthToken()
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined
-    return await request(() => api.get<OrdersResponse>('/orders', { params: { page }, headers }))
+    return await request(() => api.get<Order[]>('/orders', { params: { page }, headers }))
   },
 
   async getOrderById(id: string): Promise<Order> {

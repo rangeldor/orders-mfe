@@ -29,9 +29,3 @@ export interface CreateOrderRequest {
   items: { productId: string; quantity: number }[]
   shippingAddress?: Partial<ShippingAddress>
 }
-
-export interface OrdersResponse {
-  orders: Order[]
-  total?: number
-  page?: number
-}

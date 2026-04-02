@@ -1,9 +1,15 @@
 import { useOrders } from './features/orders/hooks/useOrders'
 import { OrderListHost } from './features/orders/components/OrderListHost'
+import { AuthError } from './features/orders/services/ordersApi'
 import { Skeleton } from '@rangeldor/cindle-design-system'
 
 function OrdersApp() {
-  const { data, isLoading, error } = useOrders()
+  const { orders, isLoading, error } = useOrders()
+
+  if (error instanceof AuthError) {
+    window.location.replace('/login')
+    return null
+  }
 
   if (isLoading) {
     return (
@@ -25,7 +31,7 @@ function OrdersApp() {
     )
   }
 
-  if (!data?.orders.length) {
+  if (!orders?.length) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         Nenhum pedido encontrado.
@@ -36,7 +42,7 @@ function OrdersApp() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Pedidos</h1>
-      <OrderListHost orders={data.orders} basePath="/pedidos" />
+      <OrderListHost orders={orders} basePath="/pedidos" />
     </div>
   )
 }

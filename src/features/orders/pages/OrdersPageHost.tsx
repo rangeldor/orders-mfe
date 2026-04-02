@@ -4,7 +4,7 @@ import { AuthError } from '../services/ordersApi'
 import { Skeleton } from '@rangeldor/cindle-design-system'
 
 export function OrdersPageHost() {
-  const { data, isLoading, error } = useOrders()
+  const { orders, isLoading, error } = useOrders()
 
   if (error instanceof AuthError) {
     window.location.replace('/login')
@@ -29,7 +29,7 @@ export function OrdersPageHost() {
     )
   }
 
-  if (!data?.orders.length) {
+  if (!orders?.length) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         Nenhum pedido encontrado.
@@ -37,5 +37,5 @@ export function OrdersPageHost() {
     )
   }
 
-  return <OrderListHost orders={data.orders} />
+  return <OrderListHost orders={orders} />
 }

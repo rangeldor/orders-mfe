@@ -21,8 +21,13 @@ export function useOrders() {
     page = undefined
   }
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['orders', { page }],
-    queryFn: () => ordersApi.getOrders(page ?? 1),
+    queryFn: async () => {
+      const orders = await ordersApi.getOrders(page ?? 1)
+      return { orders }
+    },
   })
+
+  return { orders: query.data?.orders, isLoading: query.isLoading, error: query.error }
 }
