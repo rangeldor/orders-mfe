@@ -1,5 +1,5 @@
 import type { Order } from '../types/orders.types'
-import { Badge } from '@rangeldor/cindle-design-system'
+import { Badge, Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@rangeldor/cindle-design-system'
 
 interface OrderListHostProps {
   orders: Order[]
@@ -34,30 +34,31 @@ const statusLabels: Record<string, string> = {
 
 export function OrderListHost({ orders, basePath = '/pedidos' }: OrderListHostProps) {
   return (
-    <div className="space-y-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {orders.map((order) => (
-        <div key={order.id} className="border rounded-lg p-4">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <p className="font-semibold">Pedido #{order.id.slice(0, 8)}</p>
-              <p className="text-sm text-muted-foreground">
-                {new Date(order.createdAt).toLocaleDateString('pt-BR')}
-              </p>
+        <Card key={order.id}>
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle>Pedido #{order.id.slice(0, 8)}</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {new Date(order.createdAt).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+              <Badge className={statusColors[order.status]}>
+                {statusLabels[order.status]}
+              </Badge>
             </div>
-            <Badge className={statusColors[order.status]}>
-              {statusLabels[order.status]}
-            </Badge>
-          </div>
-          <div className="flex justify-between items-center">
-            <p className="font-bold">R$ {(order.totalAmount ?? 0).toFixed(2)}</p>
-            <a
-              href={`${basePath}/${order.id}`}
-              className="text-primary hover:underline text-sm"
-            >
+          </CardHeader>
+          <CardContent className="pb-2">
+            <p className="font-bold text-lg">R$ {(order.totalAmount ?? 0).toFixed(2)}</p>
+          </CardContent>
+          <CardFooter>
+            <Button size="sm" render={<a href={`${basePath}/${order.id}`} />}>
               Ver detalhes
-            </a>
-          </div>
-        </div>
+            </Button>
+          </CardFooter>
+        </Card>
       ))}
     </div>
   )
