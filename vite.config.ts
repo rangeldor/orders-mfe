@@ -26,8 +26,7 @@ export default defineConfig({
       name: 'orders',
       filename: 'remoteEntry.js',
       exposes: {
-        './OrderList': './src/features/orders/components/OrderListHost.tsx',
-        './OrdersPage': './src/features/orders/pages/OrdersPageHost.tsx',
+        './OrdersPage': './src/exports/OrdersPage.ts',
         './NuqsAdapter': './src/exports/NuqsAdapter.ts',
       },
       shared: {
