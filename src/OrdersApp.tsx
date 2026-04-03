@@ -9,9 +9,8 @@ function OrdersApp() {
 
   useEffect(() => {
     if (error instanceof AuthError) {
-      import('auth/authActions')
-        .then((m) => m.invalidateAuth())
-        .catch(() => {})
+      localStorage.removeItem('token')
+      localStorage.removeItem('auth-storage')
       window.location.replace('/login')
     }
   }, [error])

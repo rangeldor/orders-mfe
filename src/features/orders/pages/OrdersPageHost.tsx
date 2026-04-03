@@ -9,7 +9,8 @@ export function OrdersPageHost() {
 
   useEffect(() => {
     if (error instanceof AuthError) {
-      import('auth/authActions').then((m) => m.invalidateAuth())
+      localStorage.removeItem('token')
+      localStorage.removeItem('auth-storage')
       window.location.replace('/login')
     }
   }, [error])
