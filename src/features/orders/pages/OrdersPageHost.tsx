@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useOrders } from '../hooks/useOrders'
 import { OrderListHost } from '../components/OrderListHost'
 import { AuthError } from '../services/ordersApi'
@@ -6,10 +7,14 @@ import { Skeleton } from '@rangeldor/cindle-design-system'
 export function OrdersPageHost() {
   const { orders, isLoading, error } = useOrders()
 
-  if (error instanceof AuthError) {
-    window.location.replace('/login')
-    return null
-  }
+  useEffect(() => {
+    if (error instanceof AuthError) {
+      import('auth/authActions').then((m) => m.invalidateAuth())
+      window.location.replace('/login')
+    }
+  }, [error])
+
+  if (error instanceof AuthError) return null
 
   if (isLoading) {
     return (
